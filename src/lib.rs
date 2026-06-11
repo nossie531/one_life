@@ -1,4 +1,4 @@
-//! Value consumption helper.
+//! One time value consumption helper.
 //!
 //! _The author of this crate is not good at English._  
 //! _Forgive me if the document is hard to read._

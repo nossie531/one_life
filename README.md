@@ -1,72 +1,59 @@
-# only_one
+# one_life
 
-Value consumption helper.
+One time value consumption helper.
 
 _The author of this crate is not good at English._  
 _Forgive me if the document is hard to read._
 
 ## What is this?
 
-This crate provides a wrapper type `One` that handles value consumption.
+Core item of this crate is type `One`. It is a very simple wrapper.
+It delegates all operations to the wrapped value as smart pointer.
+However, if you use `One::take` and extract thw wrapped value,
+most of the subsequent operations will panic.
 
-Internally, This type is super simple newtype of [`Option`]. However, it
-sometimes makes code simpler than using `Option` directly. (Especially,
-types that implements [`Drop`] are good [examples](#examples) of this.)
+## For readability
 
-## Background
+Internally, `One` is just newtype of [`Option`]. And its functionality
+is more restricted than `Option`. However, because of this, we get the
+following advantages in code reading and writing.
 
-In implementation of [`Drop::drop`], let's say we want to consume the
-field value but not reference it. There are several ways to achieve this,
-as noted [later](#popular-ways). However, if we want the way that always
-available and unsafe-free, there remains only one way. So, we normally
-choose the way with [`Option::take`] method.
+- In code reading, the reasons for wrapping becomes more clear.
+- In code writing, unwrapping is no longer necessary.
 
-### Bad code smell
+## Other approaches
 
-Using `Option` for this purpose has following drawbacks.
+In some special cases, the following might be more useful than
+`One::take` or [`Option::take`].
 
-- In code writing, unwrapping processes are required in many places.
-- In code reading, until reading drop code, wrapping reason is unclear.
-
-### Popular ways
-
-If mutable reference is provided,
-field value of its target can be consumed by following ways.  
-(About [`drop`][`Drop::drop`] method, we can use `&mut self`).
-
-- [`Option::take`] - Always usable if filed type is wrapped by [`Option`]
 - [`mem::take`] - Only usable if field type implements [`Default`]
-- [`ptr::read`] - Aggressive binary data copy (required `unsafe`)
-- [`mem::replace`] - Combine with [`mem::zeroed`] (required `unsafe`)
-
-## Solution
-
-`One` usually acts as a smart pointer to saved value. Therefore, unwrap
-action is hidden by automatic dereference. And if value consumption is
-required such as drop situation, you can use `One::take` method.
-This mechanism shortens the code.
-
-Also, `One` lacks generality like `Option`.
-This clarifies wrapping purpose.
+- [`mem::replace`] with [`mem::zeroed`] - Required `unsafe`, but highspeed
 
 ## Examples
 
-Following code is a common example with double meaning 😓.
+Simple example.
 
 ```rust
-use only_one::prelude::*;
+use one_life::prelude::*;
 
-fn main() {
-    let mut message_box = None;
-    let mut worker = Worker::new(&mut message_box);
-    assert_eq!(worker.message(), "I am a new worker!");
+let mut val = One::new("foo");
+assert_eq!(val.to_uppercase(), "FOO");
+assert_eq!(One::take(&mut val), "foo");
+assert!(!One::exists(&val));
+```
 
-    worker.do_hard_work();
-    assert_eq!(worker.message(), "I am buzy!");
+Common [`Drop`] example (with double meaning 😓).
 
-    worker.do_bullshit_work();
-    assert_eq!(message_box.unwrap(), "I am retired!");
-}
+```rust
+use one_life::prelude::*;
+
+let mut message_box = None;
+let mut worker = Worker::new(&mut message_box);
+assert_eq!(worker.message(), "I am a new worker!");
+worker.do_hard_work();
+assert_eq!(worker.message(), "I am buzy!");
+worker.do_bullshit_work();
+assert_eq!(message_box.unwrap(), "I am retired!");
 
 struct Worker<'a> {
     message: One<String>,
@@ -116,4 +103,3 @@ See [CHANGELOG](CHANGELOG.md).
 [`mem::replace`]: https://doc.rust-lang.org/std/mem/fn.replace.html
 [`mem::take`]: https://doc.rust-lang.org/std/mem/fn.take.html
 [`mem::zeroed`]: https://doc.rust-lang.org/std/mem/fn.zeroed.html
-[`ptr::read`]: https://doc.rust-lang.org/std/ptr/fn.read.html

@@ -1,10 +1,10 @@
 [package]
-name = "only_one"
+name = "one_life"
 version = "0.1.0"
 authors = ["Nossie531"]
 edition = "2024"
-description = "Value consumption helper."
-repository = "https://github.com/nossie531/only_one"
-license = "MIT OR Apache-2.0"
+description = "One time value consumption helper."
+repository = "https://github.com/nossie531/one_life"
+license = "MIT"
 keywords = ["drop"]
 categories = ["no-std"]

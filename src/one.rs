@@ -2,7 +2,7 @@
 
 use core::ops::{Deref, DerefMut};
 
-/// Wrapper to handle value consumption.
+/// Wrapper to handle one time value consumption.
 ///
 /// This type usually acts as a smart pointer to saved value.
 /// It can consume its value only once via [`take`](Self::take) method.
@@ -14,24 +14,35 @@ use core::ops::{Deref, DerefMut};
 ///
 /// # Examples
 ///
+/// Simple example.
+/// 
+/// ```rust
+/// use one_life::prelude::*;
+/// 
+/// let mut val = One::new("foo");
+/// assert_eq!(val.to_uppercase(), "FOO");
+/// assert_eq!(One::take(&mut val), "foo");
+/// assert!(!One::exists(&val));
 /// ```
-/// # use only_one::prelude::*;
-///
+/// 
+/// Common [`Drop`] example (with double meaning 😓).
+/// 
+/// ```rust
+/// use one_life::prelude::*;
+/// 
 /// let mut message_box = None;
 /// let mut worker = Worker::new(&mut message_box);
 /// assert_eq!(worker.message(), "I am a new worker!");
-///
 /// worker.do_hard_work();
 /// assert_eq!(worker.message(), "I am buzy!");
-///
 /// worker.do_bullshit_work();
 /// assert_eq!(message_box.unwrap(), "I am retired!");
-///
+/// 
 /// struct Worker<'a> {
 ///     message: One<String>,
 ///     message_box: &'a mut Option<String>,
 /// }
-///
+/// 
 /// impl<'a> Worker<'a> {
 ///     pub fn new(message_box: &'a mut Option<String>) -> Self {
 ///         let message = One::new("I am a new worker!".to_string());
@@ -40,20 +51,20 @@ use core::ops::{Deref, DerefMut};
 ///             message_box,
 ///         }
 ///     }
-///
+/// 
 ///     pub fn message(&self) -> &str {
 ///         &self.message
 ///     }
-///
+/// 
 ///     pub fn do_hard_work(&mut self) {
 ///         *self.message = "I am buzy!".to_string();
 ///     }
-///
+/// 
 ///     pub fn do_bullshit_work(mut self) {
 ///         *self.message = "I am retired!".to_string()
 ///     }
 /// }
-///
+/// 
 /// impl Drop for Worker<'_> {
 ///     fn drop(&mut self) {
 ///         *self.message_box = Some(One::take(&mut self.message));

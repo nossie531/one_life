@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "only_one"
+name = "one_life"
 version = "0.1.0"
