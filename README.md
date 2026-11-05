@@ -9,7 +9,7 @@ _Forgive me if the document is hard to read._
 
 Core item of this crate is type `One`. It is a very simple wrapper.
 It delegates all operations to the wrapped value as smart pointer.
-However, if you use `One::take` and extract thw wrapped value,
+However, if you use `One::take` and extract the wrapped value,
 most of the subsequent operations will panic.
 
 ## For readability
